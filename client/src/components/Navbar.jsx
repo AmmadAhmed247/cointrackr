@@ -5,13 +5,13 @@ import Search from './search'
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   return (
-    <div className='flex h-16 md:h-20 items-center justify-between px-4 md:px-12 bg-blue-600 ' >
+    <div className='flex h-16 md:h-20 items-center justify-between px-2 md:px-12 bg-blue-600 ' >
       <div className="flex flex-row items-center gap-5 ">
         <Link to="/" className='flex items-center' >
           <Image src="coinTrackr.png" w={52} h={52} alt="logo image" className="" />
           <span className='font-bold text-2xl ' >CoinTrackr</span>
         </Link>
-        <div className="hidden xl:flex gap-6 text-sm items-center justify-center  ">
+        <div className="hidden xl:flex gap-3 text-sm items-center justify-center  ">
           <Link to="/test" >Cryptocurrencies</Link>
           <Link to="/test">DexScan</Link>
           <Link to="/test">Exchange</Link>
