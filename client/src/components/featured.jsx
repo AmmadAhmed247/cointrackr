@@ -18,7 +18,6 @@ const Featured = ({
             ))}
           </div>
         </div>
-
         {/* Coin List */}
         <div className="flex flex-col gap-1">
           {data.map((coin, idx) => (
