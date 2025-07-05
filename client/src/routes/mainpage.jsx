@@ -43,9 +43,7 @@ const mainpage = () => {
      <TrendingTabs/>
      <CoinSection />
      <CoinData />
-     <CoinData />
-     <CoinData />
-    
+     
     </div>
   )
 }

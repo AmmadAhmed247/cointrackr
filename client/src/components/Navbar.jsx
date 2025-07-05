@@ -20,7 +20,14 @@ const Navbar = () => {
         </div>
       </div>
       <div className=" hidden xl:flex items-center gap-6 ">
-        <Link>portfolio</Link>
+        <div className="relative group inline-block">
+          <button>Liquidation</button>
+          <div className="absolute hidden bg-white w-48 z-10 group-hover:block shadow-lg mt-2 py-3 rounded">
+            <Link to="/Liquidation" className='text-black block px-4 py-2 text-sm hover:bg-zinc-100    rounded'>Liquidation</Link>
+            <Link to="/Liquidationheatmap" className='text-black block text-sm px-4 py-2  hover:bg-zinc-100 rounded'>Liquidation Heatmap</Link>
+          </div>
+        </div>
+
         <Link>watchlist</Link>
         <Search />
         <button className='w-20 h-10 bg-zinc-800 rounded-2xl' >Login</button>

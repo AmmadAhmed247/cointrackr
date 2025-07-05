@@ -1,48 +1,76 @@
-import React from 'react'
-import { FaSearch,FaInfoCircle  } from 'react-icons/fa';
+import { useEffect, useState } from 'react'
+import { FaSearch, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import CustomImage from './Image';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 const CoinData = () => {
-    const sparkData = [1.2,1,5,6,2,3,7,8,9,1,2,3,5, 1, 2, 3, 1, 2, 3]
-  const formattedData = sparkData.map((value, index) => ({
-    value, time: index,
-  }
-  ))
+  const [coins, setCoins] = useState([]);
+  useEffect(() => {
+    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&sparkline=true&price_change_percentage=1h,24h,7d')
+      .then(response => response.json())
+      .then(data => setCoins(data))
+      .catch(error => console.error("error", error));
+  }, []);
+
+
   return (
-    <div className=' h-10 flex flex-row text-black text-sm p-2 border-zinc-200 border-1 py-9' >
-        <div className="flex flex-row flex-1 pl-30 gap-10 items-center">
-            <span>1</span>
-        <Link to="/:slug" className='flex flex-row gap-2 font-semibold' ><CustomImage src="bitcoin.png" className="" w={22} h={22}  /> Bitcoin  <span className='text-zinc-500 text-sm font-light ' >BTC</span> </Link>
-       
-        </div>
-        <div className="flex flex-1 gap-10 items-center">
-            <Link>$109,001</Link>
-            <Link>0.1%</Link>
-            <Link>1.23%</Link>
-            <Link>0.82%</Link>
-        </div>
-        <div className="flex flex-1/5 gap-25 flex-row">
-            <Link className='relative left-13 bottom-2 pr-2 items-center gap-2' >2,123,211,234,212 </Link>
-            <Link className='flex flex-row items-center gap-2' >42,454,123,566 </Link>
-             <Link className='flex flex-row items-center gap-2' >19.88M BTC </Link>
-        </div>
-        <div className=" items-center hidden xl:flex ">
-             <div className="w-[150px] h-20">
+    <>
+      {coins.map((coin, index) => (
+
+
+        <div key={coin.id} className='flex flex-row items-center text-sm text-zinc-600 px-4 py-9 h-12 border-b  border-zinc-100 '>
+          <div className="flex items-center xl:pl-32 md:pl-2 xl:min-w-[280px] sm:min-w-[180px] gap-10">
+            <span>{index + 1}</span>
+            <Link
+              to={`/${coin.id}`}
+              className='flex items-center gap-2 font-semibold w-[160px] overflow-hidden truncate whitespace-nowrap'
+            >
+              <CustomImage src={coin.image} w={22} h={22} />
+              <span className='truncate'>
+                {coin.name}
+              </span>
+              <span className='text-zinc-500 font-light'>
+                {coin.symbol.toUpperCase()}
+              </span>
+            </Link>
+
+          </div>
+
+          <div className="flex items-center xl:min-w-[320px] xl:pl-50 md:pl-46 sm:pl-10 pl-10 justify-between sm:gap-7 gap-7 md:gap-6 xl:gap-15 px-6">
+            <Link className="text-right w-[100px]">{coin.current_price.toLocaleString()}</Link>
+            <Link className="text-right w-[60px]">{coin.price_change_percentage_1h_in_currency?.toFixed(2)}%</Link>
+            <Link className="text-right w-[60px]">{coin.price_change_percentage_24h_in_currency?.toFixed(2)}%</Link>
+            <Link className="text-right w-[60px]">{coin.price_change_percentage_7d_in_currency?.toFixed(2)}%</Link>
+          </div>
+
+          <div className="flex items-center xl:min-w-[360px] xl:pl-50 md:pl-16 pl-20 md:gap-2 xl:gap-12 gap-12 px-6">
+            <Link className="text-right w-[150px]">{coin.market_cap.toLocaleString()}</Link>
+            <Link className="text-right w-[150px]">{coin.total_volume.toLocaleString()}</Link>
+            <Link className="text-right w-[160px]">{coin.circulating_supply.toLocaleString()} {coin.symbol.toUpperCase()}</Link>
+
+            <div className="md:pl-20 xl:pl-35 pr-10 xl:min-w-[150px] justify-center ml-auto">
+              <div className="w-[140px] h-[50px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={formattedData}>
+                  <LineChart data={coin.sparkline_in_7d.price.map((value, index) => ({ time: index, value }))}>
                     <Line
                       type="monotone"
                       dataKey="value"
-                      stroke={sparkData[0] < sparkData[sparkData.length - 1] ? '#4ade80' : '#f87171'}
+                      stroke={coin.sparkline_in_7d.price[0] < coin.sparkline_in_7d.price.at(-1) ? '#4ade80' : '#f87171'}
                       strokeWidth={2}
                       dot={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
+            </div>
+          </div>
+
+
+
         </div>
-    </div>
+      ))}
+    </>
+
   )
 }
 

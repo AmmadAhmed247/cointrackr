@@ -1,27 +1,33 @@
 import React from 'react'
 import { FaSearch,FaInfoCircle  } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 const CoinSection = () => {
   return (
-    <div className=' h-10 flex flex-row text-black text-sm p-2 border-zinc-200 border-1 py-5' >
-        <div className="flex flex-row flex-1 pl-30 gap-10 items-center">
-            <span>#</span>
-        <button>Name</button>
-        </div>
-        <div className="flex flex-1 gap-10 items-center">
-            <button>Price</button>
-            <button>1h%</button>
-            <button>24h%</button>
-            <button>7d%</button>
-        </div>
-        <div className="flex flex-1/5 gap-10 flex-row">
-            <button className='flex flex-row items-center gap-2' >Market Cap<FaInfoCircle className='text-zinc-700'/> </button>
-            <button className='flex flex-row items-center gap-2' >Volume(24h)<FaInfoCircle className='text-zinc-700'/> </button>
-             <button className='flex flex-row items-center gap-2' >Circulating Supply<FaInfoCircle className='text-zinc-700'/> </button>
-        </div>
-        <div className=" items-center hidden xl:flex ">
-            <h4>last 7 days</h4>
-        </div>
-    </div>
+   <div className='flex flex-row items-center text-sm text-black px-4 h-12 border-b border-zinc-200 '>
+  <div className="flex items-center  xl:pl-32 md:pl-2 xl:min-w-[280px] gap-10">
+    <span>#</span>
+    <button>Name</button>
+  </div>
+
+  <div className="flex items-center xl:min-w-[320px] xl:pl-58  md:pl-86 sm:pl-46 pl-46 gap-15 justify-between sm:gap-15  md:gap-12  xl:gap-20 px-6">
+    <button>Price</button>
+    <button>1h%</button>
+    <button>24h%</button>
+    <button>7d%</button>
+  </div>
+
+  <div className="flex items-center xl:min-w-[360px] xl:pl-50 md:pl-30 md:gap-18 pl-20 xl:gap-16 px-6">
+    <button className='flex items-center gap-1'>Market Cap <FaInfoCircle className='text-zinc-700' /></button>
+    <button className='flex items-center gap-1'>Volume(24h) <FaInfoCircle className='text-zinc-700' /></button>
+    <button className='flex items-center gap-1'>Supply <FaInfoCircle className='text-zinc-700' /></button>
+
+  <div className="md:pl-20 hidden xl:block xl:pl-35 pr-10 xl:min-w-[150px] justify-center ml-auto">
+    <h4>Last 7 Days</h4>
+  </div>
+  </div>
+</div>
+
+
   )
 }
 

@@ -8,7 +8,10 @@
 body{
   background-color: white;
   color: white;
-  font-family: "Poppins";
+  font-family:'Poppins','Roboto', 'Helvetica Neue', sans-serif;
   
 
+}
+.font-roboto {
+  font-family: 'Roboto', sans-serif;
 }
