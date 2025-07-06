@@ -17,11 +17,11 @@ const CoinSection = () => {
   </div>
 
   <div className="flex items-center xl:min-w-[360px] xl:pl-50 md:pl-30 md:gap-18 pl-20 xl:gap-16 px-6">
-    <button className='flex items-center gap-1'>Market Cap <FaInfoCircle className='text-zinc-700' /></button>
+    <button className='flex items-center whitespace-nowrap gap-1'>Market Cap <FaInfoCircle className='text-zinc-700' /></button>
     <button className='flex items-center gap-1'>Volume(24h) <FaInfoCircle className='text-zinc-700' /></button>
     <button className='flex items-center gap-1'>Supply <FaInfoCircle className='text-zinc-700' /></button>
 
-  <div className="md:pl-20 hidden xl:block xl:pl-35 pr-10 xl:min-w-[150px] justify-center ml-auto">
+  <div className="md:pl-20 whitespace-nowrap hidden xl:block xl:pl-35 pr-10 xl:min-w-[150px] justify-center ml-auto">
     <h4>Last 7 Days</h4>
   </div>
   </div>

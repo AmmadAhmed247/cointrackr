@@ -11,12 +11,12 @@ const Navbar = () => {
           <Image src="coinTrackr.png" w={52} h={52} alt="logo image" className="" />
           <span className='font-bold text-2xl ' >CoinTrackr</span>
         </Link>
-        <div className="hidden xl:flex gap-3 text-sm items-center justify-center  ">
-          <Link to="/test" >Cryptocurrencies</Link>
-          <Link to="/test">DexScan</Link>
-          <Link to="/test">Exchange</Link>
-          <Link to="/test">Community</Link>
-          <Link to="/test">Products</Link>
+        <div className="hidden  xl:flex gap-3 text-sm items-center justify-center  ">
+          <Link className='active:scale-106' to="/test" >Cryptocurrencies</Link>
+          <Link className='active:scale-106' to="/test">DexScan</Link>
+          <Link className='active:scale-106' to="/test">Exchange</Link>
+          <Link className='active:scale-106' to="/test">Community</Link>
+          <Link className='active:scale-106' to="/test">Products</Link>
         </div>
       </div>
       <div className=" hidden xl:flex items-center gap-6 ">
@@ -30,7 +30,7 @@ const Navbar = () => {
 
         <Link>watchlist</Link>
         <Search />
-        <button className='w-20 h-10 bg-zinc-800 rounded-2xl' >Login</button>
+        <button className='w-20 active:scale-106  h-10 bg-zinc-800 rounded-2xl' >Login</button>
       </div>
 
       <div className="xl:hidden">
