@@ -8,7 +8,8 @@ import Mainpage from './routes/mainpage.jsx'
 import Singlepage from './routes/singlepage.jsx'
 import Register from './routes/register.jsx'
 import About from './routes/About.jsx'
-import Login from './routes/login.jsx'
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify'
 
 
 const router=createBrowserRouter([
@@ -19,8 +20,6 @@ const router=createBrowserRouter([
         path:"/",element:<Mainpage/>
       },{
         path:"/:slug",element:<Singlepage/>
-      },{
-        path:"/login",element:<Login/>
       },{
         path:"/register",element:<Register/>
       },{
@@ -34,7 +33,7 @@ const router=createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <ToastContainer position="bottom-right" autoClose={3000} />
     <RouterProvider router={router}/>
-    
   </StrictMode>,
 )

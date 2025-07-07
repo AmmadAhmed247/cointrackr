@@ -53,7 +53,7 @@ const smallfeatured = ({ className }) => {
           </div>
         </Link>
       </div>
-      <div className="bg-white rounded-4xl shadow-xl h-32 w-full flex flex-col ">
+      <div className="bg-white rounded-4xl whitespace-nowrap shadow-xl h-32 w-full flex flex-col ">
         <Link className="flex flex-col">
           <h5 className="text-black text-sm font-semibold p-4">Fear & Greed &gt;</h5>
           <div className="relative w-full h-16">
@@ -66,10 +66,10 @@ const smallfeatured = ({ className }) => {
           </div>
         </Link>
       </div>
-      <div className="bg-white rounded-4xl shadow-xl h-32 p-2 w-full flex flex-col">
+      <div className="bg-white whitespace-nowrap rounded-4xl shadow-xl h-32 p-2 w-full flex flex-col">
   <Link className="flex flex-col">
     <h5 className="text-black text-sm font-semibold p-2">Altseason &gt;</h5>
-    <div className="text-xl  text-black mt-1 ">
+    <div className="text-xl whitespace-nowrap text-black  sm:mt-1 ">
       <span className="font-semibold">24</span>
       <span className="text-gray-500"> / 100</span>
     </div>
@@ -77,7 +77,7 @@ const smallfeatured = ({ className }) => {
       <h6>Bitcoin</h6>
       <h6>Altcoin</h6>
     </div>
-    <div className="relative w-full h-2 mt-2 rounded overflow-hidden flex">
+    <div className="relative w-full h-2 whitespace-nowrap mt-2 rounded overflow-hidden flex">
       <div className="bg-[#F68819]" style={{ width: '25%' }}></div>
       <div className="bg-[#FCDBB9]" style={{ width: '25%' }}></div>
       <div className="bg-[#C1CCFD]" style={{ width: '25%' }}></div>

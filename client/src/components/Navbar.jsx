@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import { Link } from "react-router-dom"
 import Image from './Image'
 import Search from './search'
-const Navbar = () => {
+import Login from './login'
+const Navbar = ({ onLoginClick }) => {
   const [open, setOpen] = useState(false);
+    
   return (
     <div className='flex h-16 md:h-20 items-center justify-between px-2 md:px-12 bg-blue-600 ' >
       <div className="flex flex-row items-center gap-5 ">
@@ -30,7 +32,7 @@ const Navbar = () => {
 
         <Link>watchlist</Link>
         <Search />
-        <button className='w-20 active:scale-106  h-10 bg-zinc-800 rounded-2xl' >Login</button>
+        <button onClick={onLoginClick}  className='w-20 active:scale-106  h-10 bg-zinc-800 rounded-2xl' >Login</button>
       </div>
 
       <div className="xl:hidden">
@@ -45,12 +47,13 @@ const Navbar = () => {
           <Link to="/trending" className="hover:text-xl hover:text-blue-800  text-black">Trending</Link>
           <Link to="/volume" className="hover:text-xl hover:text-blue-800  text-black">Volume</Link>
           <div className="flex flex-col w-full gap-2">
-            <Link className='bg-blue-600 rounded-md w-full items-center flex justify-center h-12' to="/signup" >
+            <button onClick={onLoginClick} className='bg-blue-600 rounded-md w-full items-center flex justify-center h-12' to="/signup" >
               Create an account
-            </Link>
-            <Link className='bg-blue-600 rounded-md w-full items-center flex justify-center h-12' to="/login" >
+            </button>
+            <button onClick={onLoginClick}  className='bg-blue-600 rounded-md w-full items-center flex justify-center h-12' to="/login" >
               Login
-            </Link>
+            </button>
+            
           </div>
         </div>
       </div>
