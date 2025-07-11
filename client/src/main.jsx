@@ -19,12 +19,13 @@ const router=createBrowserRouter([
       {
         path:"/",element:<Mainpage/>
       },{
-        path:"/:slug",element:<Singlepage/>
-      },{
         path:"/register",element:<Register/>
       },{
         path:"/about",element:<About/>
-      }
+      },{
+        path:"/coins/:slug",element:<Singlepage/>
+      },
+      
     ]
   }
 

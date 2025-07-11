@@ -9,7 +9,7 @@ const CoinSection = () => {
     <button>Name</button>
   </div>
 
-  <div className="flex items-center xl:min-w-[320px] xl:pl-58  md:pl-86 sm:pl-46 pl-46 gap-15 justify-between sm:gap-15  md:gap-12  xl:gap-20 px-6">
+  <div className="flex items-center xl:min-w-[320px] xl:pl-58  md:pl-78 sm:pl-46 pl-46 gap-15 justify-between sm:gap-15  md:gap-17  xl:gap-20 px-6">
     <button>Price</button>
     <button>1h%</button>
     <button>24h%</button>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { FaSearch, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import CustomImage from './Image';
-import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, ResponsiveContainer,YAxis } from 'recharts';
 const CoinData = () => {
   const [coins, setCoins] = useState([]);
   useEffect(() => {
@@ -11,7 +11,6 @@ const CoinData = () => {
       .then(data => setCoins(data))
       .catch(error => console.error("error", error));
   }, []);
-
 
   return (
     <>
@@ -22,7 +21,7 @@ const CoinData = () => {
           <div className="flex items-center xl:pl-32 md:pl-2 xl:min-w-[280px] sm:min-w-[180px] gap-10">
             <span>{index + 1}</span>
             <Link
-              to={`/${coin.id}`}
+              to={`coins/${coin.id}`}
               className='flex items-center gap-2 font-semibold w-[160px] overflow-hidden truncate whitespace-nowrap'
             >
               <CustomImage src={coin.image} w={22} h={22} />
@@ -36,14 +35,14 @@ const CoinData = () => {
 
           </div>
 
-          <div className="flex items-center xl:min-w-[320px] xl:pl-50 md:pl-46 sm:pl-10 pl-10 justify-between sm:gap-7 gap-7 md:gap-6 xl:gap-15 px-6">
+          <div className="flex items-center xl:min-w-[320px] xl:pl-55 md:pl-46 sm:pl-10 pl-10 justify-between sm:gap-7 gap-7 md:gap-6 xl:gap-15 px-6">
             <Link className="text-right w-[100px]">{coin.current_price.toLocaleString()}</Link>
             <Link className="text-right w-[60px]">{coin.price_change_percentage_1h_in_currency?.toFixed(2)}%</Link>
             <Link className="text-right w-[60px]">{coin.price_change_percentage_24h_in_currency?.toFixed(2)}%</Link>
             <Link className="text-right w-[60px]">{coin.price_change_percentage_7d_in_currency?.toFixed(2)}%</Link>
           </div>
 
-          <div className="flex items-center xl:min-w-[360px] xl:pl-50 md:pl-16 pl-20 md:gap-2 xl:gap-12 gap-12 px-6">
+          <div className="flex items-center whitespace-nowrap xl:min-w-[360px] xl:pl-50 md:pl-16 pl-20 md:gap-2 xl:gap-12 gap-12 px-6">
             <Link className="text-right w-[150px]">{coin.market_cap.toLocaleString()}</Link>
             <Link className="text-right w-[150px]">{coin.total_volume.toLocaleString()}</Link>
             <Link className="text-right w-[160px]">{coin.circulating_supply.toLocaleString()} {coin.symbol.toUpperCase()}</Link>
@@ -52,6 +51,7 @@ const CoinData = () => {
               <div className="w-[140px] h-[50px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={coin.sparkline_in_7d.price.map((value, index) => ({ time: index, value }))}>
+                    <YAxis type="number" domain={['dataMin - 1', 'dataMax + 1']} hide />
                     <Line
                       type="monotone"
                       dataKey="value"

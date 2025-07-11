@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaFire, FaClock, FaEye, FaChartLine, FaRocket, FaBell, FaChartBar } from 'react-icons/fa';
+
 const Trending = () => {
   return (
     <div className='flex flex-row justify-between '>
