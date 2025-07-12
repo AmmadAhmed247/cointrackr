@@ -1,9 +1,13 @@
-import express from "express"
+import express from "express";
+import { createComment, getComment } from "../controllers/comment.controller.js";
+import { verifyToken } from "../middlewares/auth.js";
 
-const router=express();
+const router = express.Router();
 
-router.get(":id",getPostComment);
-router.patch(":id",addComment);
-router.delete(":id",deleteComment);
+// GET comments for a coin (no auth required to read comments)
+router.get("/:coinId", getComment);
 
-export default router
+// POST comment for a coin (auth required to create comments)
+router.post("/:coinId", verifyToken, createComment);
+
+export default router;

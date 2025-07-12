@@ -15,7 +15,7 @@ const NewsHeadline = ({ className }) => {
     ))
     return (
         <div className={className} >
-            <div className="bg-white rounded-4xl shadow-2xl h-32 w-full flex flex-col ">
+            <div className="bg-white rounded-4xl shadow-2xl h-fit p-2 w-full flex flex-col ">
                 <Link className="flex flex-col">
                     <h5 className="text-black text-sm items-center gap-2 flex font-semibold p-2">CMC News<span className="inline-flex items-center space-x-1  text-black text-sm">
                         <svg
@@ -48,8 +48,9 @@ const NewsHeadline = ({ className }) => {
                     </div>
                 </Link>
             </div>
-            <div className="bg-whiterounded-4xl shadow-2xl h-32 w-full flex flex-col ">
+            <div className="bg-whiterounded-4xl relative shadow-2xl h-32 w-full flex flex-col ">
                 <Link className="flex flex-col">
+                <h6 className='text-md absolute right-2 font-semibold items-center' >Ad</h6>
                     <CustomImage src="add.jpg" className="rounded-3xl h-32 w-full" />
                 </Link>
             

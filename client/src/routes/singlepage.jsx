@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import { FaShareAlt, FaInfoCircle, FaGlobe, FaAngleDown, FaCheckCircle, FaEye, FaSmile, FaPlus, FaRetweet, FaRegComment } from 'react-icons/fa';
-import { BsArrowUpRight, BsArrowDownRight } from 'react-icons/bs';
-import Comment from '../components/comment';
-import CustomImage from '../components/Image'
+import React, { useState, useMemo } from 'react';
+import {
+  FaShareAlt, FaInfoCircle, FaGlobe, FaAngleDown, FaCheckCircle,
+  FaEye, FaSmile, FaPlus, FaRetweet, FaRegComment
+} from 'react-icons/fa';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { LineChart, Line, ResponsiveContainer, YAxis, XAxis, CartesianGrid } from 'recharts';
-import axios from "axios"
+import { LineChart, Line, ResponsiveContainer, YAxis, CartesianGrid } from 'recharts';
+import axios from "axios";
+import Comment from '../components/comment';
+import CustomImage from '../components/Image';
 
 const tabs = [
-  'Chart', 'Market', 'News', 'Yield',
-  'Market cycles', 'Analytics', 'About',
+  'Chart', 'Market', 'News', 'Yield', 'Market cycles', 'Analytics', 'About',
 ];
 
 const formatPercentage = (num) => {
@@ -18,104 +20,130 @@ const formatPercentage = (num) => {
 
 const formatBigNumber = (num) => {
   if (typeof num !== 'number') return '0';
-  if (num >= 1_000_000_000) {
-    return `${(num / 1_000_000_000).toFixed(2)}B`;
-  } else if (num >= 1_000_000) {
-    return `${(num / 1_000_000).toFixed(2)}M`;
-  } else {
-    return num.toLocaleString();
-  }
+  if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(2)}B`;
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+  return num.toLocaleString();
 };
 
 const formatRatioPercentage = (numerator, denominator) => {
   if (typeof numerator !== 'number' || typeof denominator !== 'number' || denominator === 0) {
     return '0.00%';
   }
-  const ratio = (numerator / denominator) * 100;
-  return `${ratio.toFixed(2)}%`;
+  return `${((numerator / denominator) * 100).toFixed(2)}%`;
 };
 
 const getSinglePageData = async (slug) => {
-  const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/coins/${slug}`)
+  const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/coins/${slug}`);
   return res.data;
-}
+};
 
 const getChartData = async (slug, days) => {
   const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/coins/${slug}/market_chart`, {
     params: { days }
-  })
+  });
   return res.data;
-}
+};
 
-const singlepage = () => {
-  const [coin, setCoins] = useState(null);
-  const [chartData, setChartData] = useState([]);
-  const [selectRange, setselectRange] = useState("1");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+const SinglePage = () => {
   const { slug } = useParams();
+  const [selectRange, setSelectRange] = useState("1");
+  const [activeTab, setActiveTab] = useState("Chart");
+  const [commentText, setCommentText] = useState("");
+  const [showCommentBox, setShowCommentBox] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const [chartResponse, coinResponse] = await Promise.all([
-          getChartData(slug, selectRange),
-          getSinglePageData(slug)
-        ]);
-        
-        
-        const processedChartData = chartResponse.prices?.map(([timestamp, price]) => ({
-          timestamp,
-          value: price,
-          date: new Date(timestamp).toLocaleDateString()
-        })) || [];
-        
-        setChartData(processedChartData);
-        setCoins(coinResponse);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message || 'Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const queryClient = useQueryClient();
 
-    if (slug) {
-      fetchData();
+  const commentMutation = useMutation({
+    mutationFn: async (newComment) => {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/comments/${slug}`,
+        newComment,
+        { withCredentials: true }
+      );
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['comments', slug]);
+      setCommentText("");
+      setShowCommentBox(false); // auto-close on success
+    },
+    onError: (err) => {
+      console.error("Post comment error:", err);
+      alert("Login required to post a comment.");
     }
-  }, [slug, selectRange]);
+  });
 
-  const [activeTab, SetTab] = useState("Chart");
+  const sentimentMutation = useMutation({
+    mutationFn: async (sentiment) => {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/sentiment/${slug}`,
+        { sentiment },
+        { withCredentials: true }
+      );
+      return res.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries(['sentiment', slug]),
+    onError: (err) => {
+      console.error("Vote error:", err);
+      alert("Login required to vote on sentiment.");
+    }
+  });
 
-  
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-black">Loading...</div>
-      </div>
-    );
+  const handleVote = (sentiment) => {
+    sentimentMutation.mutate(sentiment);
+  };
+
+  const { data: coin, isLoading: coinLoading, error: coinError } = useQuery({
+    queryKey: ['coin', slug],
+    queryFn: () => getSinglePageData(slug),
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: chartResponse, isLoading: chartLoading, error: chartError } = useQuery({
+    queryKey: ['chart', slug, selectRange],
+    queryFn: () => getChartData(slug, selectRange),
+    enabled: !!slug,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const { data: sentimentStats, isLoading: sentimentLoading } = useQuery({
+    queryKey: ['sentiment', slug],
+    queryFn: async () => {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/sentiment/${slug}`);
+      return res.data;
+    },
+    enabled: !!slug
+  });
+
+  const { data: comments } = useQuery({
+    queryKey: ['comments', slug],
+    queryFn: async () => {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/comments/${slug}`);
+      return res.data;
+    },
+    enabled: !!slug
+  });
+
+  const chartData = useMemo(() => {
+    if (!chartResponse?.prices) return [];
+    return chartResponse.prices.map(([timestamp, price]) => ({
+      timestamp,
+      value: price,
+      date: new Date(timestamp).toLocaleDateString()
+    }));
+  }, [chartResponse]);
+
+  if (coinLoading || chartLoading) {
+    return <div className="flex justify-center items-center h-screen text-black">Loading...</div>;
   }
 
-  
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-red-500">Error: {error}</div>
-      </div>
-    );
+  if (coinError || chartError) {
+    return <div className="flex justify-center items-center h-screen text-red-500">Error: {coinError?.message || chartError?.message}</div>;
   }
 
-  
   if (!coin) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-black">No data available</div>
-      </div>
-    );
+    return <div className="flex justify-center items-center h-screen text-black">No data available</div>;
   }
 
   return (
@@ -159,8 +187,7 @@ const singlepage = () => {
             <h6 className='text-zinc-700 flex gap-2 justify-center items-center' >{formatBigNumber(coin.circulating_supply)} {coin.symbol.toUpperCase()}</h6>
           </div>
         </div>
-        
-        {/* Rest of your component remains the same until the chart section */}
+
         <div className="flex justify-between mt-8">
           <h4 className='text-black text-sm'>Website</h4>
           <div className=" flex flex-row gap-4 ">
@@ -168,16 +195,17 @@ const singlepage = () => {
             <Link className='text-black rounded-xl flex flex-row items-center gap-2 bg-zinc-200 text-xs px-2' >Whitepaper <FaAngleDown className="text-sm" /></Link>
           </div>
         </div>
-        
-        {/* Continue with the rest of your existing JSX... */}
+
         <div className="flex justify-between mt-8  border-zinc-100 border-1 rounded-xl border-b-4 px-2 py-3">
           <div className="block">
             <h4 className='text-black text-sm '>All-time high </h4>
             <span className='text-black text-xs' >{coin.ath_date}</span>
           </div>
-          <div className="block text-left w-25">
-            <h4 className='text-black text-sm '>${coin.ath?.toLocaleString()}</h4>
-            <span className='text-black text-xs' >{formatPercentage(coin.ath_change_percentage)}</span>
+          <div className="block w-fit">
+            <h4 className='text-sm text-black'>${coin.ath?.toLocaleString()}</h4>
+            <span className={`text-sm ${formatPercentage(coin.ath_change_percentage) > 0 ? "text-green-500" : "text-red-500"}`}>
+              {formatPercentage(coin.ath_change_percentage)}
+            </span>
           </div>
         </div>
         <div className="flex border-zinc-100 border-1 rounded-xl px-2 py-3 justify-between border-t-4">
@@ -187,11 +215,11 @@ const singlepage = () => {
           </div>
           <div className="block w-fit">
             <h4 className='text-black text-sm '>${coin.atl?.toLocaleString()}</h4>
-            <span className='text-black text-xs' >{formatPercentage(coin.atl_change_percentage)}</span>
+            {<span className='text-green-500 text-xs' >{formatPercentage(coin.atl_change_percentage)}</span>}
           </div>
         </div>
       </div>
-      
+
       <div className="flex-3 relative">
         <div className="flex z-40 bg-white top-0 sticky justify-between items-center border-1 border-zinc-100 rounded-md ">
           <div className="flex  flex-row gap-8 px-2 py-3 items-center justify-center  ">
@@ -226,7 +254,7 @@ const singlepage = () => {
             ))}
           </div>
         </div>
-        
+
         <div className="h-120  border-zinc-100 border-l-1 mt-10">
           <ResponsiveContainer width="100%" height="100%">
             {Array.isArray(chartData) && chartData.length > 0 ? (
@@ -279,80 +307,97 @@ const singlepage = () => {
           </ResponsiveContainer>
         </div>
       </div>
-      
-      {/* Right sidebar remains the same */}
-      <div className="flex-1 items-center hidden xl:block ">
-        {/* Your existing right sidebar content */}
-        <div className="flex justify-between items-center  px-2 border-1 border-zinc-100 rounded-md py-3   ">
-          <h4 className='text-black text-sm flex flex-rwo gap-2 items-center'> 
-            <CustomImage src={coin.image} h={28} w={28} />  
-            {coin.name} 
-            <span><FaCheckCircle className="text-blue-500 w-4 h-4 ml-1" /></span> 
-            <span className='text-zinc-700 text-sm'> 2.8M follower</span> 
-          </h4>
-          <div className=" flex flex-row gap-4 ">
-            <button className=' rounded-xl active:scale-106 flex flex-row items-center gap-2 bg-blue-600 text-white  font-semibold py-2 text-xs px-2' > <span className='font-light'>+</span>   Follow </button>
-          </div>
-        </div>
-        
-        {/* Rest of your right sidebar content */}
-        <div className="border-1 block border-zinc-100 pt-3 flex-row px-2 rounded-xl pb-1">
-          <h1 className='text-black flex gap-2  items-center' >Community sentiment <span className='text-zinc-600 text-xs' >4.2M votes</span></h1>
-          <div className="flex flex-row justify-between mt-2">
-            <div className="flex items-center gap-2">
-              <div className="group flex items-center gap-2 cursor-pointer">
-                <div className="h-2 w-24 rounded-full bg-green-500 transition-all duration-300 group-hover:h-3" />
-                <span className="text-green-600 text-sm font-medium transition-all duration-300 group-hover:text-lg group-hover:font-bold">
-                  +2.3%
-                </span>
-              </div>
+
+      <div className="flex-1 hidden xl:block">
+        {/* Sentiment section */}
+        <div className="border border-zinc-100 rounded-xl px-2 py-3">
+          <h1 className='text-black flex gap-2 items-center'>Community sentiment <span className='text-zinc-600 text-xs'>4.2M votes</span></h1>
+          <div className="flex justify-between mt-2">
+            <div className="group flex items-center gap-2 cursor-pointer">
+              <div className="h-2 w-24 bg-green-500 rounded-full group-hover:h-3" />
+              <span className="text-green-600 text-sm font-medium group-hover:text-lg group-hover:font-bold">
+                {sentimentLoading ? '...' : `${sentimentStats?.bullish || 0} Bullish`}
+              </span>
             </div>
             <div className="group flex items-center gap-2 cursor-pointer">
-              <div className="h-2 w-24 rounded-full bg-red-500 transition-all duration-300 group-hover:h-3" />
-              <span className="text-red-600 text-sm font-medium transition-all duration-300 group-hover:text-lg group-hover:font-bold">
-                -1.7%
+              <div className="h-2 w-24 bg-red-500 rounded-full group-hover:h-3" />
+              <span className="text-red-600 text-sm font-medium group-hover:text-lg group-hover:font-bold">
+                {sentimentLoading ? '...' : `${sentimentStats?.bearish || 0} Bearish`}
               </span>
             </div>
           </div>
-          <div className="flex flex-row justify-between gap-4 mt-2">
-            <button className='text-green-500 active:scale-106 px-2 py-1 border-1 flex-1 border-green-500 rounded-xl' >bullish</button>
-            <button className='text-red-500 active:scale-106 px-2 py-1 border-1 flex-1 border-red-500 rounded-xl' >bearish</button>
+          <div className="flex gap-4 mt-2">
+            <button
+              className='text-green-500 active:scale-106 px-2 py-1 border border-green-500 rounded-xl flex-1'
+              onClick={() => handleVote("bullish")}
+              disabled={sentimentMutation.isLoading}
+            >
+              {sentimentMutation.isLoading ? 'Voting...' : 'Bullish'}
+            </button>
+            <button
+              className='text-red-500 active:scale-106 px-2 py-1 border border-red-500 rounded-xl flex-1'
+              onClick={() => handleVote("bearish")}
+              disabled={sentimentMutation.isLoading}
+            >
+              {sentimentMutation.isLoading ? 'Voting...' : 'Bearish'}
+            </button>
           </div>
-        </div>
-        
-        <div className="flex-1 items-center group relative">
-          <div className="sticky top-0 z-40 flex justify-between items-center gap-2 p-2 border-zinc-100 border-2 rounded-md bg-white">
-            <button className='text-black ml-20 w-fit px-10 py-1 rounded-md bg-zinc-100'>Top</button>
-            <button className='text-black mr-20 w-fit px-10 py-1 rounded-md bg-zinc-100'>Latest</button>
-          </div>
-          <Comment />
-          <Comment />
-          <Comment />
-          <Comment />
-          <Comment />
-          <Comment />
-          <Comment />
         </div>
 
-        <div className="relative group">
-          <button className="fixed bottom-1 right-4 z-50 bg-blue-600 text-white px-8 border-2 border-zinc-100 shadow-2xl py-4 rounded-full text-sm ">
+        {/* Comments List */}
+        <div className="mt-4 flex flex-col gap-2">
+          {comments?.map((comment) => (
+            <Comment
+              key={comment._id}
+              username={comment.user?.username}
+              avatar="/bitcoin.png"
+              createdAt={comment.createdAt}
+              text={comment.description}
+            />
+          ))}
+        </div>
+
+        {/* Comment Button & Form (Fixed) */}
+        <div className="relative">
+          <button
+            className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg"
+            onClick={() => setShowCommentBox(prev => !prev)}
+          >
             Comment
           </button>
-          <div className="fixed bottom-10 right-4 z-50 hidden group-hover:flex flex-col bg-white border border-zinc-200 rounded-xl w-96 shadow-lg p-4 h-fit transition-all duration-100">
-            <h4 className="text-black font-medium text-sm mb-2">Post a comment</h4>
-            <form className="flex flex-col gap-2">
-              <textarea
-                placeholder="Write your comment..."
-                className="border border-zinc-300 rounded-lg px-2 py-1 text-sm resize-none text-black"
-                rows={4}
-              />
-              <button className="bg-blue-600 text-white text-xs px-4 py-1 rounded-lg self-end">Post</button>
-            </form>
-          </div>
+
+          {showCommentBox && (
+            <div className="fixed bottom-20 right-4 z-50 flex flex-col bg-white border border-zinc-200 rounded-xl w-96 shadow-lg p-4 h-fit">
+              <h4 className="text-black font-medium text-sm mb-2">Post a comment</h4>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!commentText.trim()) return;
+                  commentMutation.mutate({ description: commentText });
+                }}
+                className="flex flex-col gap-2"
+              >
+                <textarea
+                  placeholder="Write your comment..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="border border-zinc-300 rounded-lg px-2 py-1 text-sm resize-none text-black"
+                  rows={4}
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white text-xs px-4 py-1 rounded-lg self-end"
+                  disabled={commentMutation.isLoading}
+                >
+                  {commentMutation.isLoading ? "Posting..." : "Post"}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-export default singlepage
+export default SinglePage

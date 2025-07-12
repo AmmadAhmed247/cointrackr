@@ -3,18 +3,29 @@ import { FaSearch, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import CustomImage from './Image';
 import { LineChart, Line, ResponsiveContainer,YAxis } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+
+const getCoinData=async()=>{
+  const response=await axios.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&sparkline=true&price_change_percentage=1h,24h,7d');
+  console.log(response.data);
+  return response.data;
+  
+}
+
+
 const CoinData = () => {
-  const [coins, setCoins] = useState([]);
-  useEffect(() => {
-    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&sparkline=true&price_change_percentage=1h,24h,7d')
-      .then(response => response.json())
-      .then(data => setCoins(data))
-      .catch(error => console.error("error", error));
-  }, []);
+  const{data,isLoading,isError}=useQuery({
+    queryKey:['coisnData'],
+    queryFn:getCoinData,
+    staleTime:1000*60*50,
+  })
+  if(isLoading) return <div className='text-black text-center' >Data is Loading,,,,</div>
+  if(isError) return <div className='text-red-500 text-center' >Error while fetching Data...</div>
 
   return (
     <>
-      {coins.map((coin, index) => (
+      {data?.map((coin, index) => (
 
 
         <div key={coin.id} className='flex flex-row items-center text-sm text-zinc-600 px-4 py-9 h-12 border-b  border-zinc-100 '>

@@ -1,5 +1,5 @@
 import mongoose, { Schema, SchemaType } from "mongoose";
-import { Schema } from "mongoose"; 
+
 
 const commentScheema=new Schema({
     description:{
@@ -11,6 +11,9 @@ const commentScheema=new Schema({
         type:Schema.Types.ObjectId,
         ref:"user",
         required:true,
+    },coinId:{
+       type:String,
+       required:true, 
     },
    
 },{timestamps:true});

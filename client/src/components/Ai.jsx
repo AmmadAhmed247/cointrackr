@@ -4,29 +4,28 @@ import CoinRow from './Coinraw';
 import { FaFire, FaClock, FaEye, FaChartLine, FaRocket, FaBell } from 'react-icons/fa';
 import axios from 'axios';
 
-
+import { useQuery } from '@tanstack/react-query';
 const getAiCoins=async()=>{
   const res=await axios.get(`${import.meta.env.VITE_API_URL}/api/coins/Aitrendingcoins`)
   return res.data;
 }
 const AiCoinsFeatured = () => {  
     const trendingIcons = [FaFire, FaClock, FaEye];
-      const [Ai,setAi]=useState([]);
+      const {data,isLoading,isError}=useQuery({
+        queryKey:['AiTrendingCoins'],
+        queryFn:getAiCoins,
+        staleTime:1000 *60 *5,
+      })
+      if(isLoading) return <div className='text-black text-center p-4' >Tokens are loading</div>
+      if(isError) return <div className='text-red-500 text-center p-4' >Error While Fetching Data....(AI)</div>
       
-      useEffect(()=>{
-        const fetchingData=async()=>{
-          const data=await getAiCoins();
-          setAi(data);
-          
-        }
-        fetchingData();
-      },[])
-      const AiData=Ai.map((coin,index)=>({
+      const AiData=data?.map((coin,index)=>({
         rank:index+1,
         logo:coin.image,
         name:coin.symbol.toUpperCase(),
         price:coin.current_price.toLocaleString(),
         sparkData:coin.sparkline_in_7d.price,    
+        change24h: coin.price_change_percentage_24h.toFixed(2),   
       }))
         
   return (
@@ -41,7 +40,7 @@ const AiCoinsFeatured = () => {
           </div>
         </div>        
         <div className="flex flex-col gap-1">
-          {AiData.map((coin, idx) => (
+          {AiData?.map((coin, idx) => (
             <Link key={idx}>
               <CoinRow
                 rank={coin.rank}
@@ -49,6 +48,8 @@ const AiCoinsFeatured = () => {
                 name={coin.name}
                 price={coin.price}
                 sparkData={coin.sparkData}
+                change24h={coin.change24h}
+                
               />
             </Link>
           ))}

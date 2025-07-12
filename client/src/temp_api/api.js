@@ -3,15 +3,7 @@ import axios from "axios"
 const COINGECKO_URL = 'https://api.coingecko.com/api/v3';
 const FEAR_GREED_URL = 'https://api.alternative.me/fng/';
 
-export const getGlobData = async () => {
-  const res = await axios.get(`${COINGECKO_URL}/global`);
-  return res.data.data;
-};
 
-export const exchangeData = async () => {
-  const res = await axios.get(`${COINGECKO_URL}/exchanges`)
-  return res.data.length;
-}
 
 export const fearGreed = async () => {
   try {
@@ -33,58 +25,10 @@ export const fearGreed = async () => {
   }
 }
 
-export const getTrendingCoinsData = async () => {
-  const res = await axios.get(`${COINGECKO_URL}/coins/markets`, {
-    params: {
-      vs_currency: 'usd',
-      order: 'market_cap_desc',
-      per_page: 5,
-      page: 1,
-      sparkline: true,
-    }
-  });
-  return res.data;
-}
 
-export const getTopDeFiCoins = async () => {
-  const res = await axios.get(
-    'https://api.coingecko.com/api/v3/coins/markets',
-    {
-      params: {
-        vs_currency: 'usd',
-        category: 'decentralized-finance-defi',
-        order: 'market_cap_desc',
-        per_page: 5,
-        page: 1,
-        sparkline: true
-      }
-    }
-  );
-  return res.data;
-};
 
-export const getAICoins = async () => {
-  try {
-    const res = await axios.get('https://api.coingecko.com/api/v3/coins/markets', {
-      params: {
-        vs_currency: 'usd',
-        category: 'artificial-intelligence',
-        order: 'market_cap_desc',
-        per_page: 5,
-        page: 1,
-        sparkline: true
-      },
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    });
-    return res.data;
-  } catch (error) {
-    console.error('Error fetching AI coins:', error);
-    throw error;
-  }
-};
+
+
 
 // Fixed function name to match component usage
 export const getGlobalMarketCap = async () => {
@@ -136,7 +80,7 @@ export const chartData = async (days = 7) => {
     console.error("Global chart data error:", err);
   }
   
-  // Fallback: try Bitcoin chart data
+  
   try {
     const response = await axios.get(`${COINGECKO_URL}/coins/bitcoin/market_chart`, {
       params: {
@@ -164,45 +108,22 @@ export const chartData = async (days = 7) => {
   
   // Final fallback: return sample data
   return [
-    { time: Date.now() - 6 * 24 * 60 * 60 * 1000, value: 210000000000 },
+    { time: Date.now() - 6 * 24 * 60 * 60 * 1000, value: 2110000000000 },
     { time: Date.now() - 5 * 24 * 60 * 60 * 1000, value: 2250000000000 },
     { time: Date.now() - 4 * 24 * 60 * 60 * 1000, value: 2120000000000 },
     { time: Date.now() - 3 * 24 * 60 * 60 * 1000, value: 2880000000000 },
     { time: Date.now() - 2 * 24 * 60 * 60 * 1000, value: 2060000000000 },
-    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 2900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 9900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 1900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 3900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 4900000000000 },
+    { time: Date.now() - 1 * 24 * 60 * 60 * 1000, value: 5900000000000 },
     { time: Date.now(), value: 2520000000000 }
   ];
 };
 
-// Alternative Bitcoin-specific chart data
-export const getBitcoinChartData = async (days = 7) => {
-  try {
-    const response = await axios.get(`${COINGECKO_URL}/coins/bitcoin/market_chart`, {
-      params: {
-        vs_currency: 'usd',
-        days: days
-      }
-    });
-    
-    const data = response.data;
-    
-    if (!data || !data.market_caps) {
-      console.log("Bitcoin market_caps not found", data);
-      return [];
-    }
 
-    // Format data for recharts
-    return data.market_caps.map(([timestamp, value]) => ({
-      time: timestamp,
-      value: value
-    }));
-  } catch (err) {
-    console.error("Bitcoin chart data error:", err);
-    return [];
-  }
-};
-
-// Get CMC100 equivalent data (top 100 coins average)
 export const getCMC100Data = async () => {
   try {
     const res = await axios.get(`${COINGECKO_URL}/coins/markets`, {
@@ -237,7 +158,7 @@ export const getCMC100Data = async () => {
     // Return fallback data
     return {
       value: 206.87,
-      sparkline: [12, 15, 18, 22, 19, 25, 28]
+      sparkline: [12, 215, 118, 222, 119, 25, 283,20,152,1,3,5,17,8,1,2,3,4,335,711,28,0,23]
     };
   }
 };
@@ -276,16 +197,3 @@ export const getAltseasonData = async () => {
   }
 };
 
-export const getGlobalMarketcapData = async (days = 30) => {
-  try {
-    const res = await axios.get(`https://api.coingecko.com/api/v3/global/market_cap_chart`, {
-      params: {
-        days: days
-      }
-    })
-    return res.data;
-  } catch (error) {
-    console.log("Global MC CHART DATA ERROR", error);
-    throw error;
-  }
-}

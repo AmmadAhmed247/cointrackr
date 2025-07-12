@@ -14,7 +14,7 @@ export default function Login({ onClose }) {
     const res = await axios.post(`http://localhost:3000/api/user/register`, {
       email,
       password,
-      username: email.split("@")[0] // or get from input
+      username: email.split("@")[0] 
     });
     toast.success("Account created succesfully")
     onClose(); // close modal
@@ -26,7 +26,9 @@ export default function Login({ onClose }) {
     try {
       const res=await axios.post(`http://localhost:3000/api/user/login`,{
         email,password,
-      });
+      },
+    { withCredentials: true },
+  );
        toast.success("Logged in successfully!");
        setloginerror("");
       onClose();
@@ -97,14 +99,7 @@ setloginerror(msg);
         </div>
 
 
-        <div className="border transition-transform active:scale-95  flex items-center justify-center gap-2 rounded-md mt-4 px-4 py-2 border-zinc-300 hover:bg-zinc-50 cursor-pointer">
-          <img
-            src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png?v=026"
-            alt="Binance"
-            className=" h-5 w-5 object-contain"
-          />
-          <span className="text-zinc-800 text-sm font-medium">Continue with Binance</span>
-        </div>
+       
 
         <div className="transition-transform active:scale-95 border flex items-center justify-center gap-2 rounded-md mt-4 px-4 py-2 border-zinc-300 hover:bg-zinc-50 cursor-pointer">
           <img src="https://seeklogo.com/images/M/metamask-logo-09EDE53DBD-seeklogo.com.png" alt="MetaMask" className="h-5 w-5 rounded-sm" />
@@ -137,14 +132,7 @@ setloginerror(msg);
         </div>
 
 
-        <div className="border transition-transform active:scale-95  flex items-center justify-center gap-2 rounded-md mt-4 px-4 py-2 border-zinc-300 hover:bg-zinc-50 cursor-pointer">
-          <img
-            src="https://cryptologos.cc/logos/binance-coin-bnb-logo.png?v=026"
-            alt="Binance"
-            className=" h-5 w-5 object-contain"
-          />
-          <span className="text-zinc-800 text-sm font-medium">Continue with Binance</span>
-        </div>
+        
 
         <div className="transition-transform active:scale-95 border flex items-center justify-center gap-2 rounded-md mt-4 px-4 py-2 border-zinc-300 hover:bg-zinc-50 cursor-pointer">
           <img src="https://seeklogo.com/images/M/metamask-logo-09EDE53DBD-seeklogo.com.png" alt="MetaMask" className="h-5 w-5 rounded-sm" />

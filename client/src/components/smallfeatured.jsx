@@ -1,94 +1,86 @@
-import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { 
-  getGlobalMarketCap, 
-  chartData, 
-  fearGreed, 
-  getCMC100Data, 
-  getAltseasonData 
+import React from 'react';
+import { Link } from 'react-router-dom';
+import {
+  getGlobalMarketCap,
+  chartData,
+  fearGreed,
+  getCMC100Data,
+  getAltseasonData,
 } from '../temp_api/api';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
 
 const formatNumber = (num) => {
-  if (!num) return '0'
-  const trillions = 1_000_000_000_000
-  const billions = 1_000_000_000
-  const millions = 1_000_000
+  if (!num) return '0';
+  const trillions = 1_000_000_000_000;
+  const billions = 1_000_000_000;
+  const millions = 1_000_000;
 
-  if (num >= trillions) return (num / trillions).toFixed(2) + 'T'
-  if (num >= billions) return (num / billions).toFixed(2) + 'B'
-  if (num >= millions) return (num / millions).toFixed(2) + 'M'
+  if (num >= trillions) return (num / trillions).toFixed(2) + 'T';
+  if (num >= billions) return (num / billions).toFixed(2) + 'B';
+  if (num >= millions) return (num / millions).toFixed(2) + 'M';
 
-  return num.toLocaleString()
-}
+  return num.toLocaleString();
+};
+
+const getFearGreedLabel = (value) => {
+  if (value <= 20) return 'Extreme Fear';
+  if (value <= 40) return 'Fear';
+  if (value <= 60) return 'Neutral';
+  if (value <= 80) return 'Greed';
+  return 'Extreme Greed';
+};
+
+const getFearGreedPosition = (value) => {
+  const angle = (value / 100) * 180;
+  const radians = (angle * Math.PI) / 180;
+  const radius = 29;
+  const centerX = 36;
+  const centerY = 34.5;
+
+  const x = centerX + radius * Math.cos(Math.PI - radians);
+  const y = centerY - radius * Math.sin(Math.PI - radians);
+
+  return { x, y };
+};
 
 const SmallFeatured = ({ className }) => {
-  const [marketCap, setMarketCap] = useState(null);
-  const [marketCapHistory, setMarketCapHistory] = useState([]);
-  const [fearGreedData, setFearGreedData] = useState(null);
-  const [cmc100Data, setCmc100Data] = useState(null);
-  const [altseasonData, setAltseasonData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: marketCap,
+    isLoading: marketCapLoading,
+  } = useQuery({ queryKey: ['marketCap'], queryFn: getGlobalMarketCap ,  retry: 1,  staleTime: 1000 * 60 * 3});
 
-  useEffect(() => {
-    const fetchingData = async () => {
-      try {
-        setLoading(true);
-        const [cap, history, fearGreedInfo, cmc100Info, altseasonInfo] = await Promise.all([
-          getGlobalMarketCap(),
-          chartData(),
-          fearGreed(),
-          getCMC100Data(),
-          getAltseasonData(),
-        ]);
-        
-        setMarketCap(cap);
-        setMarketCapHistory(history);
-        setFearGreedData(fearGreedInfo);
-        setCmc100Data(cmc100Info);
-        setAltseasonData(altseasonInfo);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchingData();
-  }, []);
+  const {
+    data: marketCapHistory,
+    isLoading: marketCapHistoryLoading,
+  } = useQuery({ queryKey: ['marketCapHistory'], queryFn: chartData  ,  retry: 1, staleTime: 1000 * 60 * 3});
 
-  // Helper function to get fear and greed color
-  const getFearGreedColor = (value) => {
-    if (value <= 20) return '#EA3943'; // Extreme Fear
-    if (value <= 40) return '#EA8C00'; // Fear
-    if (value <= 60) return '#F3D42F'; // Neutral
-    if (value <= 80) return '#93D900'; // Greed
-    return '#16C784'; // Extreme Greed
-  };
+  const {
+    data: fearGreedData,
+    isLoading: fearGreedLoading,
+  } = useQuery({ queryKey: ['fearGreed'], queryFn: fearGreed  ,  retry: 1, staleTime: 1000 * 60 * 3});
 
-  const getFearGreedLabel = (value) => {
-    if (value <= 20) return 'Extreme Fear';
-    if (value <= 40) return 'Fear';
-    if (value <= 60) return 'Neutral';
-    if (value <= 80) return 'Greed';
-    return 'Extreme Greed';
-  };
+  const {
+    data: cmc100Data,
+    isLoading: cmc100Loading,
+  } = useQuery({ queryKey: ['cmc100'], queryFn: getCMC100Data ,  retry: 1, staleTime: 1000 * 60 * 3 });
 
-  // Helper function to calculate SVG position for fear and greed indicator
-  const getFearGreedPosition = (value) => {
-    const angle = (value / 100) * 180; // Convert to degrees (0-180)
-    const radians = (angle * Math.PI) / 180;
-    const radius = 29;
-    const centerX = 36;
-    const centerY = 34.5;
-    
-    const x = centerX + radius * Math.cos(Math.PI - radians);
-    const y = centerY - radius * Math.sin(Math.PI - radians);
-    
-    return { x, y };
-  };
+  const {
+    data: altseasonData,
+    isLoading: altseasonLoading,
+  } = useQuery({ queryKey: ['altseason'], queryFn: getAltseasonData ,  retry: 1,  staleTime: 1000 * 60 * 3});
 
-  if (loading) {
+  const isLoading =
+    marketCapLoading ||
+    marketCapHistoryLoading ||
+    fearGreedLoading ||
+    cmc100Loading ||
+    altseasonLoading;
+
+  const fearGreedValue = fearGreedData?.value || 54;
+  const fearGreedPos = getFearGreedPosition(fearGreedValue);
+
+  if (isLoading) {
     return (
       <div className={className}>
         <div className="bg-white rounded-4xl shadow-xl h-32 w-full flex items-center justify-center">
@@ -98,30 +90,23 @@ const SmallFeatured = ({ className }) => {
     );
   }
 
-  const fearGreedValue = fearGreedData?.value || 54;
-  const fearGreedPos = getFearGreedPosition(fearGreedValue);
-
   return (
     <div className={className}>
-      {/* Market Cap Card */}
+      {/* === MARKET CAP CARD === */}
       <div className="bg-white rounded-4xl shadow-xl h-32 w-full flex flex-col">
         <Link className="flex flex-col">
           <h5 className="text-black text-sm font-semibold p-2">Market Cap &gt;</h5>
-          <span className="text-black px-2 py-2 font-semibold">
-            ${formatNumber(marketCap)}
-          </span>
+          <span className="text-black px-2 py-2 font-semibold">${formatNumber(marketCap)}</span>
           <div className="h-10 w-full p-2">
             <ResponsiveContainer height="100%" width="100%">
               <LineChart data={marketCapHistory}>
-              <YAxis type="number" domain={['dataMin - 1', 'dataMax + 1']} hide />
-
+                <YAxis type="number" domain={['dataMin - 1', 'dataMax + 1']} hide />
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke={
-                    marketCapHistory.length > 0 && 
-                    marketCapHistory[0]?.value < marketCapHistory[marketCapHistory.length - 1]?.value 
-                      ? '#4ade80' 
+                    marketCapHistory?.[0]?.value < marketCapHistory?.[marketCapHistory.length - 1]?.value
+                      ? '#4ade80'
                       : '#f87171'
                   }
                   strokeWidth={2}
@@ -134,25 +119,25 @@ const SmallFeatured = ({ className }) => {
         </Link>
       </div>
 
-      {/* CMC100 Card */}
+      {/* === CMC100 CARD === */}
       <div className="bg-white rounded-4xl shadow-xl h-32 w-full flex flex-col">
         <Link className="flex flex-col">
           <h5 className="text-black text-sm font-semibold p-2">CMC100 &gt;</h5>
           <span className="text-black px-2 py-2 font-semibold">
-            ${cmc100Data?.value?.toFixed(2) || '206.22'}
+            ${cmc100Data?.value?.toFixed(2) || '0.00'}
           </span>
           <div className="h-10 w-full p-2">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={cmc100Data?.sparkline?.map((value, index) => ({ value, time: index })) || []}>
-               <YAxis type="number" domain={['dataMin - 1', 'dataMax + 1']} hide />
-                
+              <LineChart
+                data={cmc100Data?.sparkline?.map((value, index) => ({ value, time: index })) || []}
+              >
+                <YAxis type="number" domain={['dataMin - 1', 'dataMax + 1']} hide />
                 <Line
                   type="monotone"
                   dataKey="value"
                   stroke={
-                    cmc100Data?.sparkline && 
-                    cmc100Data.sparkline[0] < cmc100Data.sparkline[cmc100Data.sparkline.length - 1]
-                      ? '#4ade80' 
+                    cmc100Data?.sparkline?.[0] < cmc100Data?.sparkline?.[cmc100Data.sparkline.length - 1]
+                      ? '#4ade80'
                       : '#f87171'
                   }
                   strokeWidth={2}
@@ -165,19 +150,32 @@ const SmallFeatured = ({ className }) => {
         </Link>
       </div>
 
-      {/* Fear & Greed Card */}
+      {/* === FEAR & GREED === */}
       <div className="bg-white rounded-4xl whitespace-nowrap shadow-xl h-32 w-full flex flex-col">
         <Link className="flex flex-col">
           <h5 className="text-black text-sm font-semibold p-4">Fear & Greed &gt;</h5>
           <div className="relative w-full h-16">
-            <svg className='w-full h-16' width="72" height="40" viewBox="0 0 72 40">
-              <path d="M 7 34.5 A 29 29 0 0 1 10.784647044348649 20.175685869057304" stroke="#EA3943" strokeWidth="3" strokeLinecap="round" fill="none"></path>
-              <path d="M 13.023600342699474 16.805790246863236 A 29 29 0 0 1 24.762047992889016 7.76596860393348" stroke="#EA8C00" strokeWidth="3" strokeLinecap="round" fill="none"></path>
-              <path d="M 28.592073019862077 6.4621217304706775 A 29 29 0 0 1 43.40792698013793 6.4621217304706775" stroke="#F3D42F" strokeWidth="3" strokeLinecap="round" fill="none"></path>
-              <path d="M 47.23795200711099 7.765968603933484 A 29 29 0 0 1 58.97639965730053 16.805790246863243" stroke="#93D900" strokeWidth="3" strokeLinecap="round" fill="none"></path>
-              <path d="M 61.215352955651355 20.175685869057304 A 29 29 0 0 1 65 34.5" stroke="#16C784" strokeWidth="3" strokeLinecap="round" fill="none"></path>
-              <circle cx={fearGreedPos.x} cy={fearGreedPos.y} r="4" fill="none" stroke="white" strokeWidth="2"></circle>
-              <circle cx={fearGreedPos.x} cy={fearGreedPos.y} r="3" fill="black"></circle>
+            <svg className="w-full h-16" width="72" height="40" viewBox="0 0 72 40">
+              {/* Arc Paths */}
+              {[
+                ['#EA3943', 7, 34.5, 10.78, 20.17],
+                ['#EA8C00', 13.02, 16.8, 24.76, 7.76],
+                ['#F3D42F', 28.59, 6.46, 43.4, 6.46],
+                ['#93D900', 47.23, 7.76, 58.97, 16.8],
+                ['#16C784', 61.21, 20.17, 65, 34.5],
+              ].map(([color, x1, y1, x2, y2], i) => (
+                <path
+                  key={i}
+                  d={`M ${x1} ${y1} A 29 29 0 0 1 ${x2} ${y2}`}
+                  stroke={color}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              ))}
+              {/* Needle */}
+              <circle cx={fearGreedPos.x} cy={fearGreedPos.y} r="4" fill="none" stroke="white" strokeWidth="2" />
+              <circle cx={fearGreedPos.x} cy={fearGreedPos.y} r="3" fill="black" />
             </svg>
             <div className="absolute inset-0 top-2 flex flex-col items-center justify-center text-black">
               <span className="text-medium font-semibold">{fearGreedValue}</span>
@@ -187,28 +185,25 @@ const SmallFeatured = ({ className }) => {
         </Link>
       </div>
 
-      {/* Altseason Card */}
+      {/* === ALTSEASON CARD === */}
       <div className="bg-white whitespace-nowrap rounded-4xl shadow-xl h-32 p-2 w-full flex flex-col">
         <Link className="flex flex-col">
           <h5 className="text-black text-sm font-semibold p-2">Altseason &gt;</h5>
-          <div className="text-xl whitespace-nowrap text-black sm:mt-1">
-            <span className="font-semibold">{altseasonData?.score ||224}</span>
+          <div className="text-xl text-black">
+            <span className="font-semibold">{altseasonData?.score || 0}</span>
             <span className="text-gray-500"> / 100</span>
           </div>
           <div className="flex flex-row justify-between text-black text-sm mt-1">
             <h6>Bitcoin</h6>
             <h6>Altcoin</h6>
           </div>
-          <div className="relative w-full h-2 whitespace-nowrap mt-2 rounded overflow-hidden flex">
-            <div className="bg-[#F68819]" style={{ width: '25%' }}></div>
-            <div className="bg-[#FCDBB9]" style={{ width: '25%' }}></div>
-            <div className="bg-[#C1CCFD]" style={{ width: '25%' }}></div>
-            <div className="bg-[#3156FA]" style={{ width: '25%' }}></div>
+          <div className="relative w-full h-2 mt-2 rounded overflow-hidden flex">
+            {['#F68819', '#FCDBB9', '#C1CCFD', '#3156FA'].map((color, i) => (
+              <div key={i} className="h-2" style={{ backgroundColor: color, width: '25%' }}></div>
+            ))}
             <div
               className="absolute top-1/2 transform -translate-y-1/2"
-              style={{
-                left: `${altseasonData?.score || 24}%`,
-              }}
+              style={{ left: `${altseasonData?.score || 0}%` }}
             >
               <div className="w-3 h-3 bg-black border-2 border-white rounded-full shadow-md"></div>
             </div>
@@ -216,7 +211,7 @@ const SmallFeatured = ({ className }) => {
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SmallFeatured
+export default SmallFeatured;

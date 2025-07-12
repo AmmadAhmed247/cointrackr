@@ -1,7 +1,7 @@
 import express from "express"
 import User from "../models/user.model.js"
 import bcrypt from "bcrypt"
-
+import jwt from "jsonwebtoken";
 export const registerUser=async(req,res)=>{
     try {
         console.log("Incoming request body:", req.body);
@@ -23,18 +23,33 @@ export const registerUser=async(req,res)=>{
 }
 
 
-export const login=async(req ,res)=>{
-    try {
-        const{email,password}=req.body;
-        const user=await User.findOne({email});
-        if(!user){
-            return res.status(401).json("User not found")
-        }
-        const isMatch=await bcrypt.compare(password,user.password)
-        if(!isMatch){
-            return res.status(400).json("Invalid Credentials")
-        }
-        return res.status(200).json({
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(401).json("User not found");
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json("Invalid credentials");
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: user._id, username: user.username, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    //Set token in cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // only secure in prod
+      sameSite: "lax", // or 'none' if using different domains and HTTPS
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Send response
+    return res.status(200).json({
       message: "Login successful",
       user: {
         id: user._id,
@@ -42,9 +57,10 @@ export const login=async(req ,res)=>{
         name: user.username,
       },
     });
-    } catch (error) {
-        return res.status(404).json({message:"Somethign went wrong",error:error.message})
-        
-    }
-}
-
+  } catch (error) {
+    return res.status(500).json({
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
